@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteBase /lab/tumblrapi/tests/http/errors/
+    RewriteRule ^([0-9]+)/?$ /lab/tumblrapi/tests/http/errors/index.php?code=$1 [L]
+</IfModule>

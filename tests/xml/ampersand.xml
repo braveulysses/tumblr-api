@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tumblr version="1.0">
+    <tumblelog name="test" timezone="US/Central" title="test">test tumblelog</tumblelog>
+    <posts start="0" total="1">
+        <post id="00000001" url="" type="regular">
+            <regular-title>ampersand test & so forth</regular-title>
+            <regular-body>This feed should fail to parse.</regular-body>
+        </post>
+    </posts>
+</tumblr>

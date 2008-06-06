@@ -1,0 +1,7 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteBase /lab/tumblrapi/tests/http/redirects/
+    RewriteRule ^301$ /lab/tumblrapi/tests/http/redirects/demo.xml [R=301]
+    RewriteRule ^302$ /lab/tumblrapi/tests/http/redirects/demo.xml [R=302]
+    RewriteRule ^307$ /lab/tumblrapi/tests/http/redirects/demo.xml [R=307]
+</IfModule>
