@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>currentDocument</key>
+	<string>tumblrtest.py</string>
+	<key>documents</key>
+	<array>
+		<dict>
+			<key>filename</key>
+			<string>tumblr.py</string>
+			<key>lastUsed</key>
+			<date>2008-02-27T04:13:25Z</date>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>tumblrtest.py</string>
+			<key>lastUsed</key>
+			<date>2008-04-07T14:17:23Z</date>
+			<key>selected</key>
+			<true/>
+		</dict>
+	</array>
+	<key>fileHierarchyDrawerWidth</key>
+	<integer>200</integer>
+	<key>metaData</key>
+	<dict>
+		<key>tumblr.py</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>52</integer>
+				<key>line</key>
+				<integer>10</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>tumblrtest.py</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>23</integer>
+				<key>line</key>
+				<integer>5</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>34</integer>
+		</dict>
+	</dict>
+	<key>openDocuments</key>
+	<array>
+		<string>tumblr.py</string>
+		<string>tumblrtest.py</string>
+	</array>
+	<key>showFileHierarchyDrawer</key>
+	<true/>
+	<key>windowFrame</key>
+	<string>{{54, 236}, {889, 750}}</string>
+</dict>
+</plist>

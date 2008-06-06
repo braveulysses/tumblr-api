@@ -1,0 +1,14 @@
+status: 301
+content-length: 0
+content-location: http://marco.tumblr.com/api/read
+server: Apache/2.0.52 (Red Hat)
+connection: close
+x-cache-hits: 2/2
+location: http://tumblelog.marco.org/api/read
+pragma: 
+cache-control: public
+date: Fri, 15 Feb 2008 05:57:35 GMT
+p3p: CP="ALL ADM DEV PSAi COM OUR OTRo STP IND ONL"
+content-type: text/html; charset=UTF-8
+-x-permanent-redirect-url: http://tumblelog.marco.org/api/read
+
