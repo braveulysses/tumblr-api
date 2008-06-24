@@ -21,7 +21,7 @@ try:
 except:
     import ElementTree as ElementTree
 
-USER_AGENT = "Tumblr in the Bronx/%s +http://labs.spaceshipnofuture.org/" % __version__
+USER_AGENT = "Tumblr in the Bronx/%s +http://labs.spaceshipnofuture.org/tumblrapi/" % __version__
 
 class TumblrError(Exception): pass
 class TumblrOhShitError(TumblrError): pass
