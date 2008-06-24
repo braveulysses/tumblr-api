@@ -3,28 +3,26 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>tumblr.py</string>
+	<string>setup.py</string>
 	<key>documents</key>
 	<array>
 		<dict>
 			<key>filename</key>
 			<string>tumblr.py</string>
 			<key>lastUsed</key>
-			<date>2008-06-24T16:25:27Z</date>
-			<key>selected</key>
-			<true/>
+			<date>2008-06-24T18:01:00Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>tumblrtest.py</string>
 			<key>lastUsed</key>
-			<date>2008-06-24T16:17:26Z</date>
+			<date>2008-06-24T18:01:00Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>setup.py</string>
 			<key>lastUsed</key>
-			<date>2008-06-24T16:25:27Z</date>
+			<date>2008-06-24T18:01:00Z</date>
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
@@ -36,9 +34,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>25</integer>
+				<integer>46</integer>
 				<key>line</key>
-				<integer>10</integer>
+				<integer>17</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -50,9 +48,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>82</integer>
+				<integer>53</integer>
 				<key>line</key>
-				<integer>23</integer>
+				<integer>10</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>

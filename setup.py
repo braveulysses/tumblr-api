@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
+from tumblr import __version__
 
 setup (
     name = 'TumblrAPI',
-    version = '0.1',
-    packages = find_packages(),
-    scripts = ['tumblr.py'],
+    version = __version__,
+    py_modules = [ 'tumblr' ],
     
     install_requires = [ 
         'httplib2>=0.2',
