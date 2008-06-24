@@ -3,36 +3,56 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>tumblrtest.py</string>
+	<string>tumblr.py</string>
 	<key>documents</key>
 	<array>
 		<dict>
 			<key>filename</key>
 			<string>tumblr.py</string>
 			<key>lastUsed</key>
-			<date>2008-02-27T04:13:25Z</date>
+			<date>2008-06-24T16:25:27Z</date>
+			<key>selected</key>
+			<true/>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>tumblrtest.py</string>
 			<key>lastUsed</key>
-			<date>2008-04-07T14:17:23Z</date>
-			<key>selected</key>
-			<true/>
+			<date>2008-06-24T16:17:26Z</date>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>setup.py</string>
+			<key>lastUsed</key>
+			<date>2008-06-24T16:25:27Z</date>
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
+		<key>setup.py</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>25</integer>
+				<key>line</key>
+				<integer>10</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>tumblr.py</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>52</integer>
+				<integer>82</integer>
 				<key>line</key>
-				<integer>10</integer>
+				<integer>23</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -58,10 +78,11 @@
 	<array>
 		<string>tumblr.py</string>
 		<string>tumblrtest.py</string>
+		<string>setup.py</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{54, 236}, {889, 750}}</string>
+	<string>{{54, 128}, {889, 750}}</string>
 </dict>
 </plist>
