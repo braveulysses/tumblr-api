@@ -217,6 +217,7 @@ class Photo(Post):
         for url in postdata.findall('photo-url'):
             self.urls[url.attrib.get('max-width')] = _unicode(url.text)
         self._keymap['body'] = 'caption'
+        self._keymap['content'] = 'caption'
         self._keymap['description'] = 'caption'
 
 class Conversation(Post):
@@ -268,14 +269,6 @@ class Audio(Post):
         self._keymap['body'] = 'caption'
         self._keymap['content'] = 'caption'
         self._keymap['description'] = 'caption'        
-               
-def _getSunProxy():
-    """Private function to be used during development."""
-    import socks
-    host = "webgate.central.sun.com"
-    port = 8080
-    proxy = httplib2.ProxyInfo(socks.PROXY_TYPE_HTTP, host, port)
-    return proxy
 
 def _parseContentType(ct):
     """Given an HTTP content-type header, parses out the content-type and the charset.
