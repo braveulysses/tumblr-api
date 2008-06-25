@@ -13,6 +13,8 @@ __TODO__ = """TODO List
 - Abandon camelCase naming style (see PEP 8)
 - Video: Parse the source and player fields
 - Audio
+- Quote: Parse a url out of Quote.source
+- Photo: Parse a url out of Photo.caption
 """
 
 import httplib2
@@ -49,7 +51,15 @@ def _unicode(str):
         return unicode(str)
 
 class Feed(object):
-    """A Feed object stores data relating to one of the Tumblelog's source feeds."""
+    """A Feed object stores data relating to one of the Tumblelog's source feeds.
+    
+    Attributes:
+    - id
+    - url
+    - type
+    - title
+    - nextUpdate
+    """
     def __init__(self, id, url, type, title, nextUpdate):
         super(Feed, self).__init__()
         self.id = id
@@ -63,6 +73,18 @@ class Tumblelog(object):
     
     The TumbleLog object stores general metadata about the tumblelog, such as its name, 
     as well as the tumblelog's posts.
+    
+    Attributes:
+    - httpResponse
+    - name
+    - cname
+    - url
+    - timezone
+    - tagline
+    - posts
+    - numPosts
+    - start
+    - feeds
     """
     def __init__(self, logdata):
         super(Tumblelog, self).__init__()
@@ -104,7 +126,13 @@ class Tumblelog(object):
             self.feeds = None
 
 class Line(object):
-    """A line in a conversation."""
+    """A line in a conversation.
+    
+    Attributes:
+    - name
+    - label
+    - content
+    """
     def __init__(self, name, label, content):
         super(Line, self).__init__()
         self.name = name
@@ -112,7 +140,18 @@ class Line(object):
         self.content = content
       
 class Post(object):
-    """Generic Post object from which the others are derived."""
+    """Generic Post object from which the others are derived.
+    
+    Attributes:
+    - type
+    - id
+    - url
+    - dateGmt
+    - date
+    - unixtime
+    - sourceFeedId
+    - sourceUrl
+    """
     def __init__(self, postdata):
         super(Post, self).__init__()
         # The keymap is a set of aliases for instance attributes.
@@ -150,7 +189,15 @@ class Post(object):
             raise AttributeError, "object has no attribute '%s'" % attr
 
 class Regular(Post):
-    """A Regular freeform post."""
+    """A Regular freeform post.
+    
+    Attributes:
+    - type
+    - title
+    - body/content/description
+    
+    See also the Post object.
+    """
     def __init__(self, postdata):
         super(Regular, self).__init__(postdata)
         self.type = 'regular'
@@ -166,7 +213,16 @@ class Regular(Post):
         self._keymap['description'] = 'body'
 
 class Link(Post):
-    """A Link, consisting of a title, url, and maybe a description."""
+    """A Link, consisting of a title, url, and maybe a description.
+    
+    Attributes:
+    - type
+    - title
+    - description/body/content
+    - linkUrl/related
+    
+    See also the Post object.
+    """
     def __init__(self, postdata):
         super(Link, self).__init__(postdata)
         self.type = 'link'
@@ -188,7 +244,13 @@ class Link(Post):
         self._keymap['related'] = 'linkUrl'
 
 class Quote(Post):
-    """A Quote and its source."""
+    """A Quote and its source.
+    
+    Attributes:
+    - type
+    - quote/description/body/content
+    - source
+    """
     def __init__(self, postdata):
         super(Quote, self).__init__(postdata)
         self.type = 'quote'
@@ -205,7 +267,15 @@ class Quote(Post):
         self._keymap['content'] = 'quote'
 
 class Photo(Post):
-    """A Photo, with a caption and several URLs of it in various sizes."""
+    """A Photo, with a caption and several URLs of it in various sizes.
+    
+    Attributes:
+    - type
+    - caption/body/content/description
+    - urls
+    
+    See also the Post object.
+    """
     def __init__(self, postdata):
         super(Photo, self).__init__(postdata)
         self.type = 'photo'
@@ -221,7 +291,15 @@ class Photo(Post):
         self._keymap['description'] = 'caption'
 
 class Conversation(Post):
-    """A Conversation or chat log.  Each line is a Line object."""
+    """A Conversation or chat log.  Each line is a Line object.
+    
+    Attributes:
+    - type
+    - description/body/content
+    - lines
+    
+    See also the Post object.
+    """
     def __init__(self, postdata):
         super(Conversation, self).__init__(postdata)
         self.type = 'conversation'
@@ -237,7 +315,17 @@ class Conversation(Post):
         self._keymap['content'] = 'description'
 
 class Video(Post):
-    """A Video object."""
+    """A Video object.
+    
+    Attributes:
+    - type
+    - source
+    - player
+    - caption/body/content/description
+    - title
+    
+    See also the Post object.
+    """
     def __init__(self, postdata):
         super(Video, self).__init__(postdata)
         self.type = 'video'
@@ -260,7 +348,15 @@ class Video(Post):
         self._keymap['description'] = 'caption'
 
 class Audio(Post):
-    """An Audio object."""
+    """An Audio object.
+    
+    Attributes:
+    - type
+    - player
+    - caption/content/body/description
+    
+    See also the Post object.
+    """
     def __init__(self, postdata):
         super(Audio, self).__init__(postdata)
         self.type = 'audio'
@@ -361,7 +457,7 @@ def parse(url, cacheDir=".cache", proxyInfo=None):
     return tumblelog
 
 def main():
-    """Doesn't do anything"""
+    """Doesn't do anything currently; reserved for future use."""
     url = "http://golden.cpl593h.net/api/read"
 
 if __name__ == '__main__':
