@@ -8,6 +8,7 @@ __TODO__ = """TODO List
 - photo-caption not present
 """
 
+import os
 import unittest
 import tumblr
 import urlparse
@@ -65,6 +66,26 @@ class SanityTestCase(unittest.TestCase):
         """Tumblelog's title can be determined."""
         for log in self.logs:
             assert log.title is not None and log.title != ''
+
+class FileOrStringTestCase(unittest.TestCase):
+    """Tests that an open file object or a string can be parsed."""
+    def setUp(self):
+        self.filename = os.getcwd() + os.sep + 'tests' + os.sep + 'file' + os.sep + 'golden.xml'
+        
+    def testOpenFile(self):
+        """An open file object can be passed to the parser."""
+        f = open(self.filename, 'r')
+        log = tumblr.parse(f)
+        f.close()
+        assert log.title == 'golden hours'
+        
+    def testString(self):
+        """An XML string can be passed to the parser."""
+        f = open(self.filename, 'r')
+        xmlString = f.read()
+        f.close()
+        log = tumblr.parse(xmlString)
+        assert log.title == 'golden hours'
 
 class ContentTypeParserTestCase(unittest.TestCase):
     """Tests the simple HTTP Content-Type parser."""

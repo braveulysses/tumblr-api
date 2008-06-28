@@ -7,7 +7,7 @@ using the Tumblr API.  Currently intended for reading but not writing.
 See http://www.tumblr.com/api for API docs, such as they are.
 """
 
-__version__ = "0.1" # $Revision: 0 $
+__version__ = "0.2" # $Revision$
 __author__ = "SNF Labs <jacob@spaceshipnofuture.org>"
 __TODO__ = """TODO List
 - Abandon camelCase naming style (see PEP 8)
@@ -17,6 +17,7 @@ __TODO__ = """TODO List
 - Photo: Parse a url out of Photo.caption
 """
 
+import urlparse
 import httplib2
 try:
     import cElementTree as ElementTree
@@ -49,6 +50,16 @@ def _unicode(str):
         return u''
     else:
         return unicode(str)
+
+def _isUrl(str):
+    """Attempts to determine if the given string is really an HTTP URL.
+
+    This is a quick-and-dirty test that just looks for an http protocol handler."""
+    u = urlparse.urlparse(str)
+    if u[0] == 'http' or u[0] == 'https':
+        return True
+    else:
+        return False
 
 class Feed(object):
     """A Feed object stores data relating to one of the Tumblelog's source feeds.
@@ -410,19 +421,34 @@ def _fetch(url, cacheDir=".cache", proxyInfo=None):
         raise UnsupportedContentTypeError
     return resp, content
 
-def _getTree(url, cacheDir=".cache", proxyInfo=None):
+def _getTree(url_or_file, cacheDir=".cache", proxyInfo=None):
     """Fetches the Tumblr API XML and returns both the HTTP status and 
-    an ElementTree representation of the content."""
-    resp, content = _fetch(url, cacheDir, proxyInfo)
+    an ElementTree representation of the content.
+    
+    Instead of a URL, this method also accepts an open file or a Tumblr
+    XML string.  In those cases, the HTTP status is returned as None."""
+    resp = None
+    if isinstance(url_or_file, file):
+        # Open file
+        content = url_or_file.read()
+    elif _isUrl(url_or_file):
+        # URL
+        resp, content = _fetch(url_or_file, cacheDir, proxyInfo)
+    else:
+        # String
+        content = url_or_file
     try:
         tree = ElementTree.fromstring(content)
     except SyntaxError:
         raise TumblrParseError, "SyntaxError while parsing XML!"
     return resp, tree
     
-def parse(url, cacheDir=".cache", proxyInfo=None):
-    """Fetches the Tumblr API XML and parses it into Python data structures."""
-    resp, tree = _getTree(url, cacheDir, proxyInfo)
+def parse(url_or_file, cacheDir=".cache", proxyInfo=None):
+    """Parses Tumblr API XML into Python data structures.
+    
+    Accepts either a URL, an open file, or a hunk of XML in a string.
+    """
+    resp, tree = _getTree(url_or_file, cacheDir, proxyInfo)
     tumblelog = Tumblelog(tree.find('tumblelog'))
     tumblelog.httpResponse = resp
     tumblelog.start = int(tree.find('posts').attrib.get('start'))
