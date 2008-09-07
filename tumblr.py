@@ -7,7 +7,7 @@ using the Tumblr API.  Currently intended for reading but not writing.
 See http://www.tumblr.com/api for API docs, such as they are.
 """
 
-__version__ = "0.2" # $Revision$
+__version__ = "0.2.1" # $Revision$
 __author__ = "SNF Labs <jacob@spaceshipnofuture.org>"
 __TODO__ = """TODO List
 - Abandon camelCase naming style (see PEP 8)
@@ -16,6 +16,9 @@ __TODO__ = """TODO List
 - Quote: Parse a url out of Quote.source
 - Photo: Parse a url out of Photo.caption
 """
+
+# Note to self:
+# Build using "python setup.py bdist_egg"
 
 import urlparse
 import httplib2
