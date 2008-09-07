@@ -476,8 +476,14 @@ def parse(url_or_file, cacheDir=".cache", proxyInfo=None):
         else:
             post = Post(postdata)
         # Get the source feed, if present
-        if post.sourceFeedId:
-            post.sourceFeed = tumblelog.feeds[post.sourceFeedId]
+        try:
+            if post.sourceFeedId:
+                post.sourceFeed = tumblelog.feeds[post.sourceFeedId]
+        except KeyError:
+            # It's possible that the Tumblr API XML response will include 
+            # a bogus feed ID. I don't know why.
+            # TODO: Add a test case for this.
+            pass
         posts.append(post)
     tumblelog.posts = posts
     return tumblelog
