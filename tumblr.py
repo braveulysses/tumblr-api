@@ -7,7 +7,7 @@ using the Tumblr API.  Currently intended for reading but not writing.
 See http://www.tumblr.com/api for API docs, such as they are.
 """
 
-__version__ = "0.2.1" # $Revision$
+__version__ = "0.2.2" # $Revision$
 __author__ = "SNF Labs <jacob@spaceshipnofuture.org>"
 __TODO__ = """TODO List
 - Abandon camelCase naming style (see PEP 8)
