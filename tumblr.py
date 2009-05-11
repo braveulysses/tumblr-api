@@ -23,9 +23,15 @@ __TODO__ = """TODO List
 import urlparse
 import httplib2
 try:
-    import cElementTree as ElementTree
+    import xml.etree.cElementTree as ElementTree
 except:
-    import ElementTree as ElementTree
+    try:
+        import xml.etree.ElementTree as ElementTree
+    except:
+        try:
+            import cElementTree as ElementTree
+        except:
+            import ElementTree as ElementTree
 
 USER_AGENT = "Tumblr in the Bronx/%s +http://labs.spaceshipnofuture.org/tumblrapi/" % __version__
 
