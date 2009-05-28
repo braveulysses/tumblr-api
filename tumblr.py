@@ -10,7 +10,6 @@ See http://www.tumblr.com/api for API docs, such as they are.
 __version__ = "0.2.2" # $Revision$
 __author__ = "SNF Labs <jacob@spaceshipnofuture.org>"
 __TODO__ = """TODO List
-- Abandon camelCase naming style (see PEP 8)
 - Video: Parse the source and player fields
 - Audio
 - Quote: Parse a url out of Quote.source
@@ -78,15 +77,15 @@ class Feed(object):
     - url
     - type
     - title
-    - nextUpdate
+    - next_update
     """
-    def __init__(self, id, url, type, title, nextUpdate):
+    def __init__(self, id, url, type, title, next_update):
         super(Feed, self).__init__()
         self.id = id
         self.url = url
         self.type = type
         self.title = title
-        self.nextUpdate = nextUpdate
+        self.next_update = next_update
 
 class Tumblelog(object):
     """Represents a single tumblelog.
@@ -95,14 +94,14 @@ class Tumblelog(object):
     as well as the tumblelog's posts.
     
     Attributes:
-    - httpResponse
+    - http_response
     - name
     - cname
     - url
     - timezone
     - tagline
     - posts
-    - numPosts
+    - num_posts
     - start
     - feeds
     """
@@ -110,13 +109,13 @@ class Tumblelog(object):
         super(Tumblelog, self).__init__()
         if logdata is None:
             raise TumblrOhShitError, "Uh-oh"
-        # The attribute self.httpResponse holds the httplib2 HTTP response object.
+        # The attribute self.http_response holds the httplib2 HTTP response object.
         # If the calling app wants to know that a redirect occurred, then they should 
         # look at the following values: 
-        # - httpResponse['content-location']:  the destination URL
-        # - httpResponse.previous.status:      the previous HTTP status (current is always 200)
-        # - httpResponse.previous.location:    the suggested destination URL
-        self.httpResponse = None
+        # - http_response['content-location']:  the destination URL
+        # - http_response.previous.status:      the previous HTTP status (current is always 200)
+        # - http_response.previous.location:    the suggested destination URL
+        self.http_response = None
         # Get tumblelog attributes
         self.title = _unicode(logdata.attrib.get('title'))
         self.name = _unicode(logdata.attrib.get('name'))
@@ -132,7 +131,7 @@ class Tumblelog(object):
             self.tagline = u''
         self.posts = []
         self.start = 0
-        self.numPosts = 0
+        self.num_posts = 0
         self.feeds = {}
         try:
             for f in logdata.find('feeds').findall('feed'):
@@ -140,8 +139,8 @@ class Tumblelog(object):
                 url = _unicode(f.attrib.get('url'))
                 type = _unicode(f.attrib.get('import-type'))
                 title = _unicode(f.attrib.get('title'))
-                nextUpdate = int(f.attrib.get('next-update-in-seconds'))
-                self.feeds[id] = Feed(id, url, type, title, nextUpdate)
+                next_update = int(f.attrib.get('next-update-in-seconds'))
+                self.feeds[id] = Feed(id, url, type, title, next_update)
         except AttributeError:
             self.feeds = None
 
@@ -166,11 +165,12 @@ class Post(object):
     - type
     - id
     - url
-    - dateGmt
+    - date_gmt
     - date
     - unixtime
-    - sourceFeedId
-    - sourceUrl
+    - source_feed
+    - source_feed_id
+    - source_url
     """
     def __init__(self, postdata):
         super(Post, self).__init__()
@@ -185,15 +185,15 @@ class Post(object):
         # Set common attributes
         self.id = int(postdata.attrib.get('id'))
         self.url = _unicode(postdata.attrib.get('url'))
-        self.dateGmt = _unicode(postdata.attrib.get('date-gmt'))
+        self.date_gmt = _unicode(postdata.attrib.get('date-gmt'))
         self.date = _unicode(postdata.attrib.get('date'))
         self.unixtime = int(postdata.attrib.get('unix-timestamp'))
         try:
-            self.sourceFeedId = int(postdata.attrib.get('from-feed-id'))
-            self.sourceUrl = _unicode(postdata.attrib.get('feed-item'))
+            self.source_feed_id = int(postdata.attrib.get('from-feed-id'))
+            self.source_url = _unicode(postdata.attrib.get('feed-item'))
         except TypeError:
-            self.sourceFeedId = None
-            self.sourceUrl = None
+            self.source_feed_id = None
+            self.source_url = None
         # Copy postdata tree into an instance attribute so that it 
         # can be inspected for whatever weird reason
         self.postdata = postdata
@@ -239,7 +239,7 @@ class Link(Post):
     - type
     - title
     - description/body/content
-    - linkUrl/related
+    - link_url/related
     
     See also the Post object.
     """
@@ -255,13 +255,13 @@ class Link(Post):
         except AttributeError:
             self.description = u''
         try:
-            self.linkUrl = _unicode(postdata.find('link-url').text)
+            self.link_url = _unicode(postdata.find('link-url').text)
         except AttributeError:
-            self.linkUrl = u''
+            self.link_url = u''
         self.via = u'' # TODO: Possibly extract 'via' link from description
         self._keymap['body'] = 'description'
         self._keymap['content'] = 'description'
-        self._keymap['related'] = 'linkUrl'
+        self._keymap['related'] = 'link_url'
 
 class Quote(Post):
     """A Quote and its source.
@@ -386,24 +386,24 @@ class Audio(Post):
         self._keymap['content'] = 'caption'
         self._keymap['description'] = 'caption'        
 
-def _parseContentType(ct):
+def _parse_content_type(ct):
     """Given an HTTP content-type header, parses out the content-type and the charset.
     
     Does not currently perform any validation on the content of the header."""
     parts = ct.split(";")
-    contentType = parts[0]
+    content_type = parts[0]
     try:
         charset = parts[1].strip().lstrip('charset=')
     except IndexError:
         charset = None
-    return contentType, charset
+    return content_type, charset
 
-def _fetch(url, cacheDir=".cache", proxyInfo=None):
+def _fetch(url, cache_dir=".cache", proxy_info=None):
     """Requests the Tumblr API URL and deals with any HTTP-related errors.
     
     Returns both an httplib2 Response object and the content."""
-    validContentTypes = [ 'application/xml', 'text/xml' ]
-    h = httplib2.Http(cache=cacheDir, proxy_info=proxyInfo)
+    valid_content_types = [ 'application/xml', 'text/xml' ]
+    h = httplib2.Http(cache=cache_dir, proxy_info=proxy_info)
     try:
         resp, content = h.request(url, method="GET", headers={ "User-Agent": USER_AGENT })
     except IOError:
@@ -422,15 +422,15 @@ def _fetch(url, cacheDir=".cache", proxyInfo=None):
     if resp.status == 503:
         raise ServiceUnavailableError
     # Bail if proper XML content-type not given
-    contentType, charset = _parseContentType(resp['content-type'])
-    if contentType in validContentTypes:
+    content_type, charset = _parse_content_type(resp['content-type'])
+    if content_type in valid_content_types:
         # Weird: using not in the above test doesn't work
         pass
     else:
         raise UnsupportedContentTypeError
     return resp, content
 
-def _getTree(url_or_file, cacheDir=".cache", proxyInfo=None):
+def _getTree(url_or_file, cache_dir=".cache", proxy_info=None):
     """Fetches the Tumblr API XML and returns both the HTTP status and 
     an ElementTree representation of the content.
     
@@ -442,7 +442,7 @@ def _getTree(url_or_file, cacheDir=".cache", proxyInfo=None):
         content = url_or_file.read()
     elif _isUrl(url_or_file):
         # URL
-        resp, content = _fetch(url_or_file, cacheDir, proxyInfo)
+        resp, content = _fetch(url_or_file, cache_dir, proxy_info)
     else:
         # String
         content = url_or_file
@@ -452,16 +452,16 @@ def _getTree(url_or_file, cacheDir=".cache", proxyInfo=None):
         raise TumblrParseError, "SyntaxError while parsing XML!"
     return resp, tree
     
-def parse(url_or_file, cacheDir=".cache", proxyInfo=None):
+def parse(url_or_file, cache_dir=".cache", proxy_info=None):
     """Parses Tumblr API XML into Python data structures.
     
     Accepts either a URL, an open file, or a hunk of XML in a string.
     """
-    resp, tree = _getTree(url_or_file, cacheDir, proxyInfo)
+    resp, tree = _getTree(url_or_file, cache_dir, proxy_info)
     tumblelog = Tumblelog(tree.find('tumblelog'))
-    tumblelog.httpResponse = resp
+    tumblelog.http_response = resp
     tumblelog.start = int(tree.find('posts').attrib.get('start'))
-    tumblelog.numPosts = int(tree.find('posts').attrib.get('total'))
+    tumblelog.num_posts = int(tree.find('posts').attrib.get('total'))
     # Get posts
     posts = []
     for postdata in tree.find('posts'):
@@ -486,8 +486,8 @@ def parse(url_or_file, cacheDir=".cache", proxyInfo=None):
             post = Post(postdata)
         # Get the source feed, if present
         try:
-            if post.sourceFeedId:
-                post.sourceFeed = tumblelog.feeds[post.sourceFeedId]
+            if post.source_feed_id:
+                post.source_feed = tumblelog.feeds[post.source_feed_id]
         except KeyError:
             # It's possible that the Tumblr API XML response will include 
             # a bogus feed ID. I don't know why.
