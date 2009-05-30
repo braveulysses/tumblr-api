@@ -1,0 +1,6 @@
+.cache/
+build/
+dist/
+TumblrAPI.egg-info/
+*.pyc
+*.tmproj
