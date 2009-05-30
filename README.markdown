@@ -1,10 +1,10 @@
-= Tumblr-API =
+# Tumblr-API #
 
 A simple read-only Python client for the Tumblr API.
 
 This should run with at least Python 2.4.
 
-== Example ==
+## Example ##
 
 	>>> import tumblr
 	>>> t = tumblr.parse("http://demo.tumblr.com/api/read")
@@ -53,16 +53,16 @@ This should run with at least Python 2.4.
 	>>> t.posts[4].content
 	u'<p>Lorem ipsum dolor sit amet, consectetuer <a href="http:///">adipiscing elit</a>. Aliquam nisi lorem, pulvinar id, commodo feugiat, vehicula et, mauris. Aliquam mattis porta urna. Maecenas dui neque, rhoncus sed, vehicula vitae, auctor at, nisi. Aenean id massa ut lacus molestie porta. Curabitur sit amet quam id libero suscipit venenatis.</p>\n<ul>\n<li>Lorem ipsum dolor sit amet.</li>\n<li>Consectetuer adipiscing elit.\xa0</li>\n<li>Nam at tortor quis ipsum tempor aliquet.</li>\n</ul>\n<p>Cum sociis <a href="http:///">natoque penatibus</a> et magnis dis parturient montes, nascetur ridiculus mus. Suspendisse sed ligula. Sed volutpat odio non turpis gravida luctus. Praesent elit pede, iaculis facilisis, vehicula mattis, tempus non, arcu.</p>\n<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">Donec placerat mauris commodo dolor. Nulla tincidunt. Nulla vitae augue.</blockquote>\n<p>Suspendisse ac pede. Cras <a href="http:///">tincidunt pretium</a> felis. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Pellentesque porttitor mi id felis. Maecenas nec augue. Praesent a quam pretium leo congue accumsan.</p>'
 
-== Dependencies ==
+## Dependencies ##
 
 * [httplib2](http://code.google.com/p/httplib2/)
 * [ElementTree](http://effbot.org/zone/element-index.htm) (included with Python 2.5)
 
-== Installation ==
+## Installation ##
 
 You can make an egg and then install with easy\_install:
 
     python setup.py bdist_egg
-    easy\_install dist/TumblrAPI-*whatever*.egg
+    easy_install dist/TumblrAPI-*version*.egg
 
 You could also just copy tumblr.py to your _site-packages_ directory.
