@@ -7,7 +7,7 @@ using the Tumblr API.  Currently intended for reading but not writing.
 See http://www.tumblr.com/api for API docs, such as they are.
 """
 
-__version__ = "0.2.2" # $Revision$
+__version__ = "0.2.4" # $Revision: 23 $
 __author__ = "SNF Labs <jacob@spaceshipnofuture.org>"
 __TODO__ = """TODO List
 - Video: Parse the source and player fields
@@ -33,6 +33,7 @@ except:
             import ElementTree as ElementTree
 
 USER_AGENT = "Tumblr in the Bronx/%s +http://labs.spaceshipnofuture.org/tumblrapi/" % __version__
+DEFAULT_HTTP_CACHE_DIR = ".cache"
 
 class TumblrError(Exception): pass
 class TumblrOhShitError(TumblrError): pass
@@ -69,6 +70,7 @@ def _isUrl(str):
     else:
         return False
 
+
 class Feed(object):
     """A Feed object stores data relating to one of the Tumblelog's source feeds.
     
@@ -86,6 +88,7 @@ class Feed(object):
         self.type = type
         self.title = title
         self.next_update = next_update
+
 
 class Tumblelog(object):
     """Represents a single tumblelog.
@@ -144,6 +147,7 @@ class Tumblelog(object):
         except AttributeError:
             self.feeds = None
 
+
 class Line(object):
     """A line in a conversation.
     
@@ -157,7 +161,8 @@ class Line(object):
         self.name = name
         self.label = label
         self.content = content
-      
+
+
 class Post(object):
     """Generic Post object from which the others are derived.
     
@@ -194,8 +199,8 @@ class Post(object):
         except TypeError:
             self.source_feed_id = None
             self.source_url = None
-        # Copy postdata tree into an instance attribute so that it 
-        # can be inspected for whatever weird reason
+        # Copy the reference for the postdata tree into an instance attribute 
+        # so that it can be inspected for whatever weird reason
         self.postdata = postdata
 
     def __getattr__(self, attr):
@@ -207,6 +212,7 @@ class Post(object):
             return self.__dict__[self._keymap[attr]]
         except:
             raise AttributeError, "object has no attribute '%s'" % attr
+
 
 class Regular(Post):
     """A Regular freeform post.
@@ -231,6 +237,7 @@ class Regular(Post):
             self.body = u''
         self._keymap['content'] = 'body'
         self._keymap['description'] = 'body'
+
 
 class Link(Post):
     """A Link, consisting of a title, url, and maybe a description.
@@ -263,6 +270,7 @@ class Link(Post):
         self._keymap['content'] = 'description'
         self._keymap['related'] = 'link_url'
 
+
 class Quote(Post):
     """A Quote and its source.
     
@@ -285,6 +293,7 @@ class Quote(Post):
         self._keymap['description'] = 'quote'
         self._keymap['body'] = 'quote'
         self._keymap['content'] = 'quote'
+
 
 class Photo(Post):
     """A Photo, with a caption and several URLs of it in various sizes.
@@ -310,6 +319,7 @@ class Photo(Post):
         self._keymap['content'] = 'caption'
         self._keymap['description'] = 'caption'
 
+
 class Conversation(Post):
     """A Conversation or chat log.  Each line is a Line object.
     
@@ -333,6 +343,7 @@ class Conversation(Post):
             self.lines.append(l)
         self._keymap['body'] = 'description'
         self._keymap['content'] = 'description'
+
 
 class Video(Post):
     """A Video object.
@@ -367,6 +378,7 @@ class Video(Post):
         self._keymap['content'] = 'caption'
         self._keymap['description'] = 'caption'
 
+
 class Audio(Post):
     """An Audio object.
     
@@ -386,6 +398,7 @@ class Audio(Post):
         self._keymap['content'] = 'caption'
         self._keymap['description'] = 'caption'        
 
+
 def _parse_content_type(ct):
     """Given an HTTP content-type header, parses out the content-type and the charset.
     
@@ -398,7 +411,7 @@ def _parse_content_type(ct):
         charset = None
     return content_type, charset
 
-def _fetch(url, cache_dir=".cache", proxy_info=None):
+def _fetch(url, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
     """Requests the Tumblr API URL and deals with any HTTP-related errors.
     
     Returns both an httplib2 Response object and the content."""
@@ -430,7 +443,7 @@ def _fetch(url, cache_dir=".cache", proxy_info=None):
         raise UnsupportedContentTypeError
     return resp, content
 
-def _getTree(url_or_file, cache_dir=".cache", proxy_info=None):
+def _getTree(url_or_file, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
     """Fetches the Tumblr API XML and returns both the HTTP status and 
     an ElementTree representation of the content.
     
@@ -452,7 +465,7 @@ def _getTree(url_or_file, cache_dir=".cache", proxy_info=None):
         raise TumblrParseError, "SyntaxError while parsing XML!"
     return resp, tree
     
-def parse(url_or_file, cache_dir=".cache", proxy_info=None):
+def parse(url_or_file, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
     """Parses Tumblr API XML into Python data structures.
     
     Accepts either a URL, an open file, or a hunk of XML in a string.

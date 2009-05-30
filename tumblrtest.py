@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 """Tumblr API client unit test cases"""
 
-__version__ = "0.1"
 __author__ = "SNF Labs"
 __TODO__ = """TODO List
 - link-via detection
 - photo-caption not present
+- all strings are Unicode strings
 """
 
 import os
 import unittest
 import tumblr
 import urlparse
+
+class WTFError(Exception): pass
 
 def isUrl(str):
     """Attempts to determine if the given string is really an HTTP URL.
@@ -22,6 +24,17 @@ def isUrl(str):
         return True
     else:
         return False
+
+def clear_http_cache():
+    cache_dir = tumblr.DEFAULT_HTTP_CACHE_DIR
+    if cache_dir == '/' or cache_dir == os.getenv('HOME'):
+        raise WTFError
+    else:
+        for f in os.listdir(cache_dir):
+            f_path = os.path.join(cache_dir, f)
+            if os.path.isfile(f_path):
+                os.unlink(f_path)
+            
 
 class SanityTestCase(unittest.TestCase):
     """Sanity checks against specific production tumblelogs."""
@@ -34,6 +47,7 @@ class SanityTestCase(unittest.TestCase):
             "http://marco.tumblr.com/api/read",
             "http://demo.tumblr.com/api/read"
         )
+        # self.urls = ( "http://marco.tumblr.com/api/read", "http://www.marco.org/api/read" )
         self.logs = []
         for url in self.urls:
             self.logs.append(tumblr.parse(url))
@@ -67,6 +81,7 @@ class SanityTestCase(unittest.TestCase):
         for log in self.logs:
             assert log.title is not None and log.title != ''
 
+
 class FileOrStringTestCase(unittest.TestCase):
     """Tests that an open file object or a string can be parsed."""
     def setUp(self):
@@ -87,19 +102,21 @@ class FileOrStringTestCase(unittest.TestCase):
         log = tumblr.parse(xmlString)
         assert log.title == 'golden hours'
 
+
 class ContentTypeParserTestCase(unittest.TestCase):
     """Tests the simple HTTP Content-Type parser."""
     def testContentTypeAndCharset(self):
         """Typical Content-Type with charset can be parsed."""
         ct = 'application/xml; charset=utf-8'
-        contentType, charset = tumblr._parseContentType(ct)
+        contentType, charset = tumblr._parse_content_type(ct)
         assert (contentType == 'application/xml') and (charset == 'utf-8')
         
     def testContentTypeWithoutCharset(self):
         """Typical Content-Type with no charset can be parsed."""
         ct = 'text/xml'
-        contentType, charset = tumblr._parseContentType(ct)
+        contentType, charset = tumblr._parse_content_type(ct)
         assert (contentType == 'text/xml') and (charset is None)
+
 
 class NetworkingTestCase(unittest.TestCase):
     """Checks various network conditions, including HTTP errors."""
@@ -132,20 +149,20 @@ class NetworkingTestCase(unittest.TestCase):
         else:
             self.fail("Expected a ServerNotFoundError!")
 
-    #def testHTTP301MovedPermanently(self):
-    #    """Redirect via HTTP 301 is recorded."""
-    #    log = tumblr.parse(self.urlMovedPermanently)
-    #    assert (log.httpResponse.previous.status == 301) and (log.httpResponse['content-location'] == self.urlRedirectDestination)
+    def testHTTP301MovedPermanently(self):
+       """Redirect via HTTP 301 is recorded."""
+       log = tumblr.parse(self.urlMovedPermanently)
+       assert (log.http_response.previous.status == 301) and (log.http_response['content-location'] == self.urlRedirectDestination)
 
     def testHTTP302Found(self):
         """Redirect via HTTP 302 is recorded."""
         log = tumblr.parse(self.urlFound)
-        assert (log.httpResponse.previous.status == 302) and (log.httpResponse['content-location'] == self.urlRedirectDestination)
+        assert (log.http_response.previous.status == 302) and (log.http_response['content-location'] == self.urlRedirectDestination)
 
     def testHTTP307(self):
         """Redirect via HTTP 307 is recorded."""
         log = tumblr.parse(self.urlTemporaryRedirect)
-        assert (log.httpResponse.previous.status == 307) and (log.httpResponse['content-location'] == self.urlRedirectDestination)
+        assert (log.http_response.previous.status == 307) and (log.http_response['content-location'] == self.urlRedirectDestination)
 
     def testHTTP403Forbidden(self):
         """Error thrown if URL is forbidden (HTTP 403)."""
@@ -237,6 +254,7 @@ class XMLTestCases(unittest.TestCase):
         else:
             fail("Expected a TumblrParseError for malformed XML due to unencoded ampersand!")
 
+
 class TumblelogTestCases(unittest.TestCase):
     """Tests involving the tumblr API XML format."""
     def setUp(self):
@@ -258,6 +276,7 @@ class TumblelogTestCases(unittest.TestCase):
     def testFeedsNotPresent(self):
         """It's okay if tumblr.feeds is or is not present."""
         self.log.feeds
+
         
 class TumblelogPostTestCases(unittest.TestCase):
     """Generic tests involving posts."""
@@ -268,6 +287,7 @@ class TumblelogPostTestCases(unittest.TestCase):
     def testPostPermalink(self):
         """post.permalink is equivalent to post.url."""
         assert self.log.posts[0].permalink == self.log.posts[0].url
+
 
 class TumblelogRegularPostTestCases(unittest.TestCase):
     """Tests involving Regular posts."""
@@ -295,6 +315,7 @@ class TumblelogRegularPostTestCases(unittest.TestCase):
         """It's okay if a Regular post has no body."""
         self.log.posts[2].body
 
+
 class TumblelogLinkPostTestCases(unittest.TestCase):
     """Tests involving Link posts."""
     def setUp(self):
@@ -314,8 +335,8 @@ class TumblelogLinkPostTestCases(unittest.TestCase):
         assert self.log.posts[0].body == self.log.posts[0].description
 
     def testLinkRelated(self):
-        """For Link posts, post.related is equivalent to post.linkUrl."""
-        assert self.log.posts[0].related == self.log.posts[0].linkUrl
+        """For Link posts, post.related is equivalent to post.link_url."""
+        assert self.log.posts[0].related == self.log.posts[0].link_url
 
     def testLinkNoTitle(self):
         """It's okay if a Link post has no title."""
@@ -327,7 +348,8 @@ class TumblelogLinkPostTestCases(unittest.TestCase):
         
     def testLinkNoLinkUrl(self):
         """It's okay if a Link post has no URL. Strange but true."""
-        self.log.posts[3].linkUrl
+        self.log.posts[3].link_url
+
 
 class TumblelogQuotePostTestCases(unittest.TestCase):
     """Tests involving quote posts."""
@@ -363,6 +385,7 @@ class TumblelogQuotePostTestCases(unittest.TestCase):
         """It's okay if a Quote post's source is empty."""
         assert self.log.posts[3].source == u''
 
+
 class TumblelogPhotoPostTestCases(unittest.TestCase):
     """Tests involving photo posts."""
     def setUp(self):
@@ -390,6 +413,7 @@ class TumblelogPhotoPostTestCases(unittest.TestCase):
         for url in self.log.posts[0].urls.values():
             assert isUrl(url)
 
+
 class TumblelogSourceFeedsTestCases(unittest.TestCase):
     """Test inolving source feed support."""
     def setUp(self):
@@ -397,24 +421,26 @@ class TumblelogSourceFeedsTestCases(unittest.TestCase):
         self.log = tumblr.parse(self.url)
         
     def testSourceFeedsPresent(self):
-        """Source feed metadata should be present in post.sourceFeed."""
-        assert self.log.posts[3].sourceFeed is not None
+        """Source feed metadata should be present in post.source_feed."""
+        assert self.log.posts[3].source_feed is not None
 
     def testSourceFeedId(self):
         """Source feed should have an Id."""
-        assert self.log.posts[3].sourceFeed.id == 48612
+        assert self.log.posts[3].source_feed.id == 48612
 
     def testSourceFeedTitle(self):
         """Source feed should have a title."""
-        assert self.log.posts[3].sourceFeed.title == u'del.icio.us/mpgomez'
+        assert self.log.posts[3].source_feed.title == u'del.icio.us/mpgomez'
 
     def testSourceFeedUrl(self):
         """Source feed should have a URL."""
-        assert self.log.posts[3].sourceFeed.url == u'http://del.icio.us/rss/mpgomez'
+        assert self.log.posts[3].source_feed.url == u'http://del.icio.us/rss/mpgomez'
 
     def testSourceFeedType(self):
         """Source feed should have a type."""
-        assert self.log.posts[3].sourceFeed.type == u'link-description'
+        assert self.log.posts[3].source_feed.type == u'link-description'
+
           
 if __name__ == '__main__':
+    clear_http_cache()
     unittest.main()
