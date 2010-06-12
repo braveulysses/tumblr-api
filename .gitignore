@@ -5,3 +5,4 @@ dist/
 TumblrAPI.egg-info/
 *.pyc
 *.tmproj
+*.swp
