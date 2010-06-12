@@ -14,7 +14,7 @@ setup (
     author = 'SNF Labs',
     author_email = 'jacob@spaceshipnofuture.org',
     description = 'Tumblr API client for Python',
-    license = 'PSF',
+    license = 'MIT',
     keywords = 'tumblr api webservice parser',
     url = 'http://labs.spaceshipnofuture.org/tumblrapi/'
 )
