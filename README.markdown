@@ -87,9 +87,13 @@ This should run with at least Python 2.4.
 
 ## Installation ##
 
-You can make an egg and then install with easy\_install:
+1) The latest release is available at the Python Package Index, so you can use _easy\_install_:
+
+    easy_install TumblrAPI
+
+2) Alternatively, you could make an egg and then install with _easy\_install_:
 
     python setup.py bdist_egg
     easy_install dist/TumblrAPI-*version*.egg
 
-You could also just copy tumblr.py to your _site-packages_ directory.
+3) Or you could also just copy tumblr.py to your _site-packages_ directory.
