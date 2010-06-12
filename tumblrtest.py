@@ -30,10 +30,11 @@ def clear_http_cache():
     if cache_dir == '/' or cache_dir == os.getenv('HOME'):
         raise WTFError
     else:
-        for f in os.listdir(cache_dir):
-            f_path = os.path.join(cache_dir, f)
-            if os.path.isfile(f_path):
-                os.unlink(f_path)
+        if os.path.exists(cache_dir):
+            for f in os.listdir(cache_dir):
+                f_path = os.path.join(cache_dir, f)
+                if os.path.isfile(f_path):
+                    os.unlink(f_path)
             
 
 class SanityTestCase(unittest.TestCase):
