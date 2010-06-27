@@ -21,6 +21,7 @@ __TODO__ = """TODO List
 
 import urlparse
 import httplib2
+from urllib import urlencode
 try:
     import xml.etree.cElementTree as ElementTree
 except:
@@ -34,6 +35,8 @@ except:
 
 USER_AGENT = "Tumblr in the Bronx/%s +http://labs.spaceshipnofuture.org/tumblrapi/" % __version__
 DEFAULT_HTTP_CACHE_DIR = ".cache"
+
+BASE_AUTH_URL = "http://www.tumblr.com/api/authenticate"
 
 class TumblrError(Exception): pass
 class TumblrOhShitError(TumblrError): pass
@@ -50,8 +53,8 @@ class BadContentTypeError(TumblrHTTPError): pass
 def _unicode(str):
     """A workaround for Python's built-in unicode().
     
-    When unicode() is invoked against a variable with the value None, then unicode()
-    will return u'None', which makes no sense to me.  
+    When unicode() is invoked against a variable with the value None,
+    then unicode() will return the string u'None', which makes no sense to me.  
     
     It should return either None or u''.  This returns u''.
     """
@@ -63,7 +66,8 @@ def _unicode(str):
 def _isUrl(str):
     """Attempts to determine if the given string is really an HTTP URL.
 
-    This is a quick-and-dirty test that just looks for an http protocol handler."""
+    This is a quick-and-dirty test that just looks for an http 
+    protocol handler."""
     u = urlparse.urlparse(str)
     if u[0] == 'http' or u[0] == 'https':
         return True
@@ -71,8 +75,48 @@ def _isUrl(str):
         return False
 
 
+class TumblrUrl(object):
+    """Use this to build a URL with a set of key-value parameters."""
+    def __init__(self):
+        super(TumblrUrl, self).__init__()
+        self.base_url = None
+        self.params = dict()
+        
+    def add_param(self, name, value):
+        self.params[name] = value
+        return self
+
+    @property
+    def url(self):
+        if len(self.params) > 0:
+                url_params = "&".join([ "=".join(p) for p in self.params.items() ])
+                return self.base_url + "?" + url_params
+        else:
+            return self.base_url
+                
+
+class AuthUrl(TumblrUrl):
+    """Use this to build a Tumblr authentication URL.
+    
+    >>> url = tumblr.AuthUrl()
+    >>> url.set_email("guido@example.com").set_password("secret").url
+    """
+    def __init__(self):
+        super(AuthUrl, self).__init__()
+        self.base_url = BASE_AUTH_URL
+        
+    def set_email(self, email):
+        self.add_param("email", email)
+        return self
+        
+    def set_password(self, password):
+        self.add_param("password", password)
+        return self
+        
+
 class Feed(object):
-    """A Feed object stores data relating to one of the Tumblelog's source feeds.
+    """A Feed object stores data relating to one of the Tumblelog's 
+    source feeds.
     
     Attributes:
     - id
@@ -93,8 +137,8 @@ class Feed(object):
 class Tumblelog(object):
     """Represents a single tumblelog.
     
-    The TumbleLog object stores general metadata about the tumblelog, such as its name, 
-    as well as the tumblelog's posts.
+    The TumbleLog object stores general metadata about the tumblelog, 
+    such as its name, as well as the tumblelog's posts.
     
     Attributes:
     - http_response
@@ -112,11 +156,13 @@ class Tumblelog(object):
         super(Tumblelog, self).__init__()
         if logdata is None:
             raise TumblrOhShitError, "Uh-oh"
-        # The attribute self.http_response holds the httplib2 HTTP response object.
-        # If the calling app wants to know that a redirect occurred, then they should 
-        # look at the following values: 
+        # The attribute self.http_response holds the httplib2 HTTP 
+        # response object.
+        # If the calling app wants to know that a redirect occurred, 
+        # then they should look at the following values: 
         # - http_response['content-location']:  the destination URL
-        # - http_response.previous.status:      the previous HTTP status (current is always 200)
+        # - http_response.previous.status:      the previous HTTP status
+        #                                        (current is always 200)
         # - http_response.previous.location:    the suggested destination URL
         self.http_response = None
         # Get tumblelog attributes
@@ -400,7 +446,8 @@ class Audio(Post):
 
 
 def _parse_content_type(ct):
-    """Given an HTTP content-type header, parses out the content-type and the charset.
+    """Given an HTTP content-type header, parses out the content-type and 
+    the charset.
     
     Does not currently perform any validation on the content of the header."""
     parts = ct.split(";")
@@ -411,16 +458,23 @@ def _parse_content_type(ct):
         charset = None
     return content_type, charset
 
-def _fetch(url, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
+def _fetch(url, http_method="GET", form_data=None, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
     """Requests the Tumblr API URL and deals with any HTTP-related errors.
     
     Returns both an httplib2 Response object and the content."""
     valid_content_types = [ 'application/xml', 'text/xml' ]
     h = httplib2.Http(cache=cache_dir, proxy_info=proxy_info)
     try:
-        resp, content = h.request(url, method="GET", headers={ "User-Agent": USER_AGENT })
+        if form_data is not None:
+            if not isinstance(form_data, type(dict())):
+                raise TypeError("form_data must be a dictionary!")
+            req_body = urlencode(form_data)
+        else:
+            req_body = None
+        resp, content = h.request(url, method=http_method, body=req_body, headers={ "User-Agent": USER_AGENT })
     except IOError:
-        # An IOError can happen, for example, when httplib2 can't write to its cache.
+        # An IOError can happen, for example, when httplib2 can't write 
+        # to its cache.
         # For now, just re-raise the exception.
         raise
     # Deal with various HTTP error states
@@ -443,9 +497,9 @@ def _fetch(url, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
         raise UnsupportedContentTypeError
     return resp, content
 
-def _getTree(url_or_file, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
+def _getResponse(url_or_file, http_method="GET", form_data=None, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
     """Fetches the Tumblr API XML and returns both the HTTP status and 
-    an ElementTree representation of the content.
+    the content body.
     
     Instead of a URL, this method also accepts an open file or a Tumblr
     XML string.  In those cases, the HTTP status is returned as None."""
@@ -455,22 +509,27 @@ def _getTree(url_or_file, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
         content = url_or_file.read()
     elif _isUrl(url_or_file):
         # URL
-        resp, content = _fetch(url_or_file, cache_dir, proxy_info)
+        resp, content = _fetch(url_or_file, http_method, form_data, cache_dir, proxy_info)
     else:
         # String
         content = url_or_file
+    return resp, content
+
+def _getTree(content):
+    """Returns an ElementTree representation of the content."""
     try:
         tree = ElementTree.fromstring(content)
     except SyntaxError:
         raise TumblrParseError, "SyntaxError while parsing XML!"
-    return resp, tree
+    return tree
     
 def parse(url_or_file, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
     """Parses Tumblr API XML into Python data structures.
     
     Accepts either a URL, an open file, or a hunk of XML in a string.
     """
-    resp, tree = _getTree(url_or_file, cache_dir, proxy_info)
+    resp, content = _getResponse(url_or_file, "GET", None, cache_dir, proxy_info)
+    tree = _getTree(content)
     tumblelog = Tumblelog(tree.find('tumblelog'))
     tumblelog.http_response = resp
     tumblelog.start = int(tree.find('posts').attrib.get('start'))
@@ -509,10 +568,4 @@ def parse(url_or_file, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
         posts.append(post)
     tumblelog.posts = posts
     return tumblelog
-
-def main():
-    """Doesn't do anything currently; reserved for future use."""
-    url = "http://golden.cpl593h.net/api/read"
-
-if __name__ == '__main__':
-    main()
+    
