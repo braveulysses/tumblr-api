@@ -44,7 +44,6 @@ class SanityTestCase(unittest.TestCase):
             "http://golden.cpl593h.net/api/read",
             "http://thelongesttrainieversaw.tumblr.com/api/read",
             "http://industry.tumblr.com/api/read",
-            "http://blog.gabrieljeffrey.com/api/read",
             "http://marco.tumblr.com/api/read",
             "http://demo.tumblr.com/api/read"
         )
