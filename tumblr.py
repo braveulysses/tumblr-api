@@ -4,12 +4,15 @@
 Pulls data about a Tumblr tumblelog into Python data structures 
 using the Tumblr API.  Currently intended for reading but not writing.
 
-See http://www.tumblr.com/api for API docs, such as they are.
+See http://www.tumblr.com/docs/en/api for API docs.
 """
 
-__version__ = "0.2.4" # $Revision: 23 $
+__version__ = "0.3.0"
 __author__ = "SNF Labs <jacob@spaceshipnofuture.org>"
 __TODO__ = """TODO List
+- Separate local and remote tests
+- Add mocks to local tests
+- Add tests for authentication
 - Video: Parse the source and player fields
 - Audio
 - Quote: Parse a url out of Quote.source
@@ -89,7 +92,8 @@ class TumblrUrl(object):
     @property
     def url(self):
         if len(self.params) > 0:
-                url_params = "&".join([ "=".join(p) for p in self.params.items() ])
+                url_params = "&".join([ "=".join(p) \
+                                        for p in self.params.items() ])
                 return self.base_url + "?" + url_params
         else:
             return self.base_url
@@ -113,6 +117,16 @@ class AuthUrl(TumblrUrl):
         self.add_param("password", password)
         return self
         
+    def set_include_theme(self, include_theme):
+        if include_theme:
+            self.add_param("include_theme", "1")
+        return self
+        
+#######################################################################
+#
+# Read API Objects
+#
+#######################################################################
 
 class Feed(object):
     """A Feed object stores data relating to one of the Tumblelog's 
@@ -444,6 +458,56 @@ class Audio(Post):
         self._keymap['content'] = 'caption'
         self._keymap['description'] = 'caption'        
 
+#######################################################################
+#
+# Authenticate API Objects
+#
+#######################################################################
+
+class AuthInfo(object):
+    def __init__(self, version, user, tumblelogs):
+        super(AuthInfo, self).__init__()
+        self.version = version
+        self.user = user
+        self.tumblelogs = tumblelogs
+        
+    
+class UserAuthInfo(object):
+    def __init__(self, userdata):
+        super(UserAuthInfo, self).__init__()
+        self.can_upload_audio = bool(int(userdata.attrib.get('can-upload-audio')))
+        self.can_upload_aiff = bool(int(userdata.attrib.get('can-upload-aiff')))
+        self.can_upload_video = bool(int(userdata.attrib.get('can-upload-video')))
+        self.max_video_bytes_uploaded = int(userdata.attrib.get('max-video-bytes-uploaded'))
+        self.can_ask_question = bool(int(userdata.attrib.get('can-ask-question')))
+        self.default_post_format = _unicode(userdata.attrib.get('default-post-format'))
+        self.liked_post_count = int(userdata.attrib.get('liked-post-count'))
+        
+
+class TumblelogAuthInfo(object):
+    def __init__(self, logdata):
+        super(TumblelogAuthInfo, self).__init__()
+        self.title = _unicode(logdata.attrib.get('title'))
+        self.type = _unicode(logdata.attrib.get('type'))
+        self.url = _unicode(logdata.attrib.get('url'))
+        self.name = _unicode(logdata.attrib.get('name'))
+        self.avatar_url = _unicode(logdata.attrib.get('avatar-url'))
+        if logdata.attrib.get('is-primary') == 'yes':
+            self.is_primary = True
+        else:
+            self.is_primary = False
+        try:
+            self.private_id = int(logdata.attrib.get('private-id'))
+        except (AttributeError, TypeError):
+            self.private_id = u''
+        # TODO: description, custom-css, theme-source
+        
+
+#######################################################################
+#
+# Action Methods
+#
+#######################################################################
 
 def _parse_content_type(ct):
     """Given an HTTP content-type header, parses out the content-type and 
@@ -522,6 +586,21 @@ def _getTree(content):
     except SyntaxError:
         raise TumblrParseError, "SyntaxError while parsing XML!"
     return tree
+    
+def authenticate(email, password, include_theme=False, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
+    """Authenticates to the Tumblr API service."""
+    # Interestingly, the Tumblr API service expects POST params to be in the 
+    # URL, not the request body.
+    auth_url = AuthUrl().set_email(email).set_password(password).set_include_theme(include_theme).url
+    resp, content = _getResponse(auth_url, "POST", None, cache_dir, proxy_info)
+    tree = _getTree(content)
+    version = tree.attrib.get('version')
+    user = UserAuthInfo(tree.find('user'))
+    tumblelogs = []
+    for tumblelog in tree.findall('tumblelog'):
+        tumblelogs.append(TumblelogAuthInfo(tumblelog))
+    authinfo = AuthInfo(version, user, tumblelogs)
+    return resp, authinfo
     
 def parse(url_or_file, cache_dir=DEFAULT_HTTP_CACHE_DIR, proxy_info=None):
     """Parses Tumblr API XML into Python data structures.
